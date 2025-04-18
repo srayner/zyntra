@@ -1,0 +1,24 @@
+# Ignore build artifacts
+core/build/
+
+# Ignore CMake output
+core/CMakeFiles/
+core/CMakeCache.txt
+core/Makefile
+core/*.cmake
+core/install_manifest.txt
+
+# Ignore object files and executables
+*.o
+*.obj
+*.exe
+*.out
+
+# Ignore editor/OS-specific files
+*.log
+*.swp
+*.swo
+.DS_Store
+
+# Ignore dependency folders (later if you use vendored libs)
+vendor/

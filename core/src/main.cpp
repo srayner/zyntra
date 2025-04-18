@@ -1,5 +1,5 @@
 #include <iostream>
-#include "src/checksum.h"
+#include "checksum.h"
 
 int main() {
     std::cout << "Hello, Zyntra World!" << std::endl;
