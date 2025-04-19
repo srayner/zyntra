@@ -1,18 +1,45 @@
+#include "command_builder.h"
 #include <iostream>
-#include "checksum.h"
+#include <nlohmann/json.hpp>
+#include <string>
+
+using json = nlohmann::json;
 
 int main() {
-    std::cout << "Hello, Zyntra World!" << std::endl;
+  std::string input;
 
-    // Example data to calculate checksum
-    uint8_t testData[] = { 0xAA, 0x02, 0x32, 0x05, 0x90 };
+  while (true) {
+    std::cout << "Enter command (JSON format): ";
+    std::getline(std::cin, input);
 
-    // Calculate checksum
-    uint8_t checksum = calculateChecksum(testData, sizeof(testData));
+    if (input == "exit") {
+      break;
+    }
 
-    // Display result
-    std::cout << "Calculated checksum: 0x" 
-              << std::hex << static_cast<int>(checksum) << std::endl;
+    try {
+      json j = json::parse(input);
 
-    return 0;
+      if (!j.is_object()) {
+        std::cout << "Invalid input: Must be a JSON object!" << std::endl;
+        continue;
+      }
+
+      std::vector<uint8_t> command = createCommandFromJson(j);
+
+      // Output the command as a byte sequence
+      std::cout << "Byte sequence: ";
+      for (auto byte : command) {
+        std::cout << "0x" << std::setw(2) << std::setfill('0') << std::hex
+                  << (int)byte << " ";
+      }
+      std::cout << std::endl;
+
+    } catch (const json::exception &e) {
+      std::cout << "Invalid JSON format: " << e.what() << std::endl;
+    } catch (const std::runtime_error &e) {
+      std::cout << "Error: " << e.what() << std::endl;
+    }
+  }
+
+  return 0;
 }

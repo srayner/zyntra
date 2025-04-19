@@ -1,6 +1,5 @@
 #pragma once
+#include "command_schema.h"
+#include <nlohmann/json.hpp>
 
-#include <vector>
-#include <cstdint>
-
-std::vector<uint8_t> buildCommand(uint8_t commandType, const std::vector<uint8_t>& payload);
+std::vector<uint8_t> createCommandFromJson(const nlohmann::json& j);

@@ -3,25 +3,20 @@ project(zyntra_core)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# Core source files (excluding main.cpp)
-set(CORE_SOURCES
-    src/checksum.cpp
-    src/command_builder.cpp
-)
+# Include folders
+include_directories(include)
 
-# Main executable
-add_executable(zyntra_core
-    src/main.cpp
-    ${CORE_SOURCES}
-)
+# Find all source files
+file(GLOB_RECURSE CORE_SOURCES "src/*.cpp")
 
-# Test executable
-add_executable(zyntra_tests
-    tests/test_checksum.cpp
-    tests/test_command_builder.cpp
-    ${CORE_SOURCES}
-)
+# Find test files
+file(GLOB_RECURSE TEST_SOURCES "tests/*.cpp")
 
-# Link extra libraries if needed (e.g., pthread for Catch2 if using threads)
-# target_link_libraries(zyntra_tests pthread)
+# Remove main.cpp from CORE_SOURCES
+list(REMOVE_ITEM CORE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 
+# Build main executable
+add_executable(zyntra_core src/main.cpp ${CORE_SOURCES})
+
+# Build tests executable
+add_executable(zyntra_tests ${TEST_SOURCES} ${CORE_SOURCES})
