@@ -1,27 +1,25 @@
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "./controllers/mega.h"
+#include "./controllers/nano.h"
+#include "./controllers/uno.h"
 #include "system_state.h"
 
-std::vector<Controller> controllers;
+std::vector<std::unique_ptr<Controller>> controllers;
 
 void addController(const std::string& type) {
-    Controller newController;
-    newController.type = type;
-
     if (type == "nano") {
-        newController.pins.push_back({"digital", 0, "LOW"});
-        newController.pins.push_back({"digital", 1, "LOW"});
+        controllers.push_back(std::make_unique<NanoController>());
     } else if (type == "uno") {
-        newController.pins.push_back({"digital", 0, "LOW"});
-        newController.pins.push_back({"analog", 1, "0"});
+        controllers.push_back(std::make_unique<UnoController>());
     } else if (type == "mega") {
-        newController.pins.push_back({"digital", 0, "LOW"});
-        newController.pins.push_back({"servo", 9, "0"});
+        controllers.push_back(std::make_unique<MegaController>());
+    } else {
+        std::cerr << "Unknown controller type: " << type << std::endl;
     }
-
-    controllers.push_back(newController);
 }
 
 void removeController(int controllerIndex) {
@@ -34,7 +32,7 @@ void removeController(int controllerIndex) {
 
 void listControllers() {
     for (size_t i = 0; i < controllers.size(); ++i) {
-        std::cout << "Controller " << i << ": " << controllers[i].type
+        std::cout << "Controller " << i << ": " << controllers[i]->toString()
                   << std::endl;
     }
 }
@@ -45,11 +43,13 @@ void listPins(int controllerIndex) {
         return;
     }
 
-    const Controller& ctrl = controllers[controllerIndex];
-    for (size_t i = 0; i < ctrl.pins.size(); ++i) {
-        std::cout << "Pin " << i << " | Type: " << ctrl.pins[i].type
-                  << " | Number: " << ctrl.pins[i].pin_number
-                  << " | State: " << ctrl.pins[i].state << std::endl;
+    Controller* ctrl = controllers[controllerIndex].get();
+    std::cout << "Controller: " << ctrl->toString() << std::endl;
+
+    for (size_t i = 0; i < ctrl->pins.size(); ++i) {
+        std::cout << "Pin " << i << " | Type: " << ctrl->pins[i].type
+                  << " | Number: " << ctrl->pins[i].pin_number
+                  << " | State: " << ctrl->pins[i].state << std::endl;
     }
 }
 
@@ -59,13 +59,14 @@ void showPinConfig(int controllerIndex, int pinIndex) {
         return;
     }
 
-    const Controller& ctrl = controllers[controllerIndex];
-    if (pinIndex < 0 || pinIndex >= ctrl.pins.size()) {
+    Controller* ctrl = controllers[controllerIndex].get();
+
+    if (pinIndex < 0 || pinIndex >= ctrl->pins.size()) {
         std::cout << "Invalid pin index." << std::endl;
         return;
     }
 
-    const Pin& pin = ctrl.pins[pinIndex];
+    const Pin& pin = ctrl->pins[pinIndex];
     std::cout << "Pin Config - Type: " << pin.type
               << ", Number: " << pin.pin_number << std::endl;
 }
@@ -76,12 +77,13 @@ void showPinState(int controllerIndex, int pinIndex) {
         return;
     }
 
-    const Controller& ctrl = controllers[controllerIndex];
-    if (pinIndex < 0 || pinIndex >= ctrl.pins.size()) {
+    Controller* ctrl = controllers[controllerIndex].get();
+
+    if (pinIndex < 0 || pinIndex >= ctrl->pins.size()) {
         std::cout << "Invalid pin index." << std::endl;
         return;
     }
 
-    const Pin& pin = ctrl.pins[pinIndex];
+    const Pin& pin = ctrl->pins[pinIndex];
     std::cout << "Pin State - State: " << pin.state << std::endl;
 }

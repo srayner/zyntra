@@ -1,9 +1,13 @@
 #include <iostream>
 #include <sstream>
+#include <thread>
 
 #include "system_command.h"
+#include "web_server.h"
 
 int main() {
+    std::thread webServerThread([]() { startWebServer(); });
+
     while (true) {
         std::cout << "\nEnter command: ";
         std::string input;
@@ -27,9 +31,7 @@ int main() {
 
         bool found = false;
 
-        std::cout << command << std::endl;
         for (auto& cmd : systemCommands) {
-            std::cout << cmd.name << std::endl;
             if (cmd.name == command) {
                 cmd.handler(args);
                 found = true;
