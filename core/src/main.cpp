@@ -1,45 +1,46 @@
-#include "command_builder.h"
 #include <iostream>
-#include <nlohmann/json.hpp>
-#include <string>
+#include <sstream>
 
-using json = nlohmann::json;
+#include "system_command.h"
 
 int main() {
-  std::string input;
+    while (true) {
+        std::cout << "\nEnter command: ";
+        std::string input;
+        std::getline(std::cin, input);
 
-  while (true) {
-    std::cout << "Enter command (JSON format): ";
-    std::getline(std::cin, input);
+        // Extract the first word (command)
+        std::istringstream stream(input);
+        std::string command;
+        stream >> command;
 
-    if (input == "exit") {
-      break;
+        // Extract the remaining arguments
+        std::vector<std::string> args;
+        std::string arg;
+        while (stream >> arg) {
+            args.push_back(arg);  // Collect the arguments
+        }
+
+        if (command == "exit") {
+            break;
+        }
+
+        bool found = false;
+
+        std::cout << command << std::endl;
+        for (auto& cmd : systemCommands) {
+            std::cout << cmd.name << std::endl;
+            if (cmd.name == command) {
+                cmd.handler(args);
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            std::cout << "Unknown command.\n";
+        }
     }
 
-    try {
-      json j = json::parse(input);
-
-      if (!j.is_object()) {
-        std::cout << "Invalid input: Must be a JSON object!" << std::endl;
-        continue;
-      }
-
-      std::vector<uint8_t> command = createCommandFromJson(j);
-
-      // Output the command as a byte sequence
-      std::cout << "Byte sequence: ";
-      for (auto byte : command) {
-        std::cout << "0x" << std::setw(2) << std::setfill('0') << std::hex
-                  << (int)byte << " ";
-      }
-      std::cout << std::endl;
-
-    } catch (const json::exception &e) {
-      std::cout << "Invalid JSON format: " << e.what() << std::endl;
-    } catch (const std::runtime_error &e) {
-      std::cout << "Error: " << e.what() << std::endl;
-    }
-  }
-
-  return 0;
+    return 0;
 }
